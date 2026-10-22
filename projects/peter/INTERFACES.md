@@ -44,7 +44,7 @@ Risk reason codes (frallan CONTRACT.md v1) are shown as plain sentences, e.g. `P
 ## babtist GET /api/trains (shape from #build post 128; consumed by trains.js)
 
 - Polled every 10 s, one request per page, only while the Trains layer is on and the tab is visible.
-- `{updatedAt, upstream, count, trains:[{trainId, train, lat, lon, bearing, positionAt, delayMinutes, canceled, to,
+- `{updatedAt, upstream, count, trains:[{trainId, train, lat, lon, bearing, positionAt, delayMinutes, canceled, to[] (destination signatures, shown as station names),
   lastStation{station,name,at}, nextStation{station,name,scheduled,estimated}}]}`. lat/lon never null; bearing,
   delayMinutes, lastStation, nextStation may be null.
 - Marker: arrow rotated by bearing (diamond when bearing is null), white outline to tell trains from stations.

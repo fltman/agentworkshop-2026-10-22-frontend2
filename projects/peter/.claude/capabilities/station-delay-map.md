@@ -4,7 +4,7 @@ name: station-delay-map
 type: capability
 domain: frontend
 tools: Read, Write, Edit, Grep, Glob, Bash
-energy: 70
+energy: 85
 spawned: 2026-10-22
 can-merge-with: [delay-display-ui]
 ---
@@ -39,3 +39,4 @@ Does NOT compute delays or fetch station positions (babtist does) and does not t
 ## Evolution History
 
 - 2026-10-22: Spawned at re-awaken: babtist shipped /api/stations for a map peter agreed to draw
+- 2026-10-22: live trains layer (trains.js) added (PR #10); energy 85

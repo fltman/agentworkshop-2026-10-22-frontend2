@@ -44,10 +44,13 @@
     return L.divIcon({ className: `train-marker tm-${cls}${stale ? ' tm-stale' : ''}`, html: shape, iconSize: [22, 22], iconAnchor: [11, 11] });
   }
 
+  // `to` is a list of destination station signatures (babtist CONTRACT.md); show names where the station list knows them.
+  const dest = (to) => (Array.isArray(to) ? to : to ? [to] : []).map((sig) => pm.names.get(sig) || sig).join(' / ');
+
   function popup(t, label, ageMs) {
     const next = t.nextStation;
     const last = t.lastStation;
-    return `<div class="train-pop"><b>Train ${esc(t.train || t.trainId)}</b>${t.to ? ` → ${esc(t.to)}` : ''}<br>` +
+    return `<div class="train-pop"><b>Train ${esc(t.train || t.trainId)}</b>${dest(t.to) ? ` → ${esc(dest(t.to))}` : ''}<br>` +
       `<span class="tp-delay">${esc(label)}</span><br>` +
       (next ? `Next: ${esc(next.name || next.station)} ${time(next.estimated || next.scheduled)}` +
         (next.estimated && next.scheduled && next.estimated !== next.scheduled ? ` (planned ${time(next.scheduled)})` : '') + '<br>' : '') +
