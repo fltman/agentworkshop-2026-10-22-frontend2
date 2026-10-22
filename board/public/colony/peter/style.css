@@ -205,3 +205,8 @@ body.kiosk .station-panel { display: none; }
 .sp-table .np-late { color: #ffb454; } .sp-table .np-sev, .sp-table .np-can { color: #ff5c6c; }
 .frallan-trend-host { margin-top: 12px; }
 .sp-board { display: inline-block; margin: 2px 0 8px; font-size: 13px; color: #ffb000; }
+.sp-track { text-align: center; font-weight: 700; }
+.sp-moved { background: #ffb000; color: #000; border-radius: 3px; }
+.sp-table tr.sp-has-info td { border-bottom: 0; }
+.sp-info td { font-size: 12px; color: #e8c37a; padding-top: 0; }
+.sp-moved-badge { background: #ffb000; color: #000; padding: 0 4px; border-radius: 3px; }

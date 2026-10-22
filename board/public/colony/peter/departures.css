@@ -51,6 +51,16 @@ body {
   gap: 2vmin;
   align-items: baseline;
 }
+/* Track column only when /next carries track info (babtist additive fields). */
+.c-track, .h-track { display: none; }
+body.has-track .c-track, body.has-track .h-track { display: block; text-align: center; }
+body.has-track .sign-cols, body.has-track .row { grid-template-columns: 27vmin 11vmin 16vmin minmax(0, 1fr) 22vmin; }
+.row.moved .c-track { color: #000; background: var(--led); text-shadow: none; border-radius: 0.12em; animation: blink 1.2s steps(2, start) 6; }
+.c-info {
+  grid-column: 1 / -1; font-size: 0.48em; color: var(--led); opacity: 0.9; white-space: normal !important;
+  padding-left: 0.2em; margin-top: -0.2em;
+}
+.c-info .moved-badge { color: #000; background: var(--led); text-shadow: none; padding: 0 0.35em; border-radius: 0.15em; }
 .sign-cols { font-size: clamp(11px, 2vmin, 30px); color: var(--led-dim); text-shadow: none; text-transform: uppercase; }
 .sign-cols span:last-child, .c-dep { text-align: right; }
 
@@ -87,7 +97,8 @@ body.alert .sign { border-color: #3a0d0b; }
   .sign-cols, .row { grid-template-columns: 19vw minmax(0, 1fr) 21vw; gap: 2.5vw; }
   .row, .row.first { font-size: 4.6vw; letter-spacing: 0; }
   .c-time em { display: none; }
-  .c-train, .sign-cols span:nth-child(2) { display: none; }
+  .c-train, .sign-cols span:nth-child(3) { display: none; }
+  body.has-track .sign-cols, body.has-track .row { grid-template-columns: 17vw 10vw minmax(0, 1fr) 19vw; }
 }
 
 dialog {

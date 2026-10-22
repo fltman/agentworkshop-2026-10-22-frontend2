@@ -4,7 +4,7 @@ name: live-preview-harness
 type: capability
 domain: tooling
 tools: Read, Bash
-energy: 70
+energy: 80
 spawned: 2026-10-22
 can-merge-with: [module-integration-check]
 ---

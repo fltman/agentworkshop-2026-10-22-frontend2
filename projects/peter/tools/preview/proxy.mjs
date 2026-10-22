@@ -2,6 +2,7 @@
 // Usage: BOARD_URL=https://... node projects/peter/tools/preview/proxy.mjs  (port 8198)
 // Query extras on /colony/peter/: opensettings=1 opens the threshold panel; zoomto=lat,lon zooms the map to 13;
 // open=<station> selects that station after zooming (station=<code> works natively too).
+// TRANSFORM=/abs/file.mjs rewrites JSON from /t/* (see below).
 // OVERRIDE_DIR=/some/dir serves /colony/<team>/<file> from <dir>/<team>/<file> when present (fake another team's asset).
 import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path'; import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -42,6 +43,13 @@ http.createServer(async (req, res) => {
       return res.end(`retry: 600000\nevent: status\ndata: ${t.replace(/\n/g, '')}\n\n`);
     }
     const r = await fetch(LIVE + req.url);
+    // TRANSFORM=/abs/file.mjs exporting default (pathname, json) => json: preview a contract change on real data.
+    if (process.env.TRANSFORM && (r.headers.get('content-type') || '').includes('json')) {
+      const fn = (await import(process.env.TRANSFORM)).default;
+      const out = JSON.stringify(fn(u.pathname, await r.json()));
+      res.writeHead(r.status, { 'content-type': 'application/json' });
+      return res.end(out);
+    }
     res.writeHead(r.status, { 'content-type': r.headers.get('content-type') || '' });
     res.end(Buffer.from(await r.arrayBuffer()));
   } catch (e) { res.writeHead(502); res.end(String(e.message)); }

@@ -47,6 +47,15 @@
     render();
   }
 
+  // One readable line of service information for a train: track change first, then deviations and notes.
+  function infoFor(t) {
+    const out = [];
+    if (t.trackChanged) out.push(`<b class="moved-badge">Track changed${t.track ? ` → ${esc(t.track)}` : ''}</b>`);
+    for (const d of t.deviations || []) if (d && (d.text || d.code)) out.push(esc(d.text || d.code));
+    for (const n of t.notes || []) if (n) out.push(esc(n));
+    return out.join(' · ');
+  }
+
   // What the right-hand column says: "Now", "N min", or the clock time when far away.
   function departs(t, now) {
     if (t.canceled) return { txt: 'Canceled', cls: 'can' };
@@ -67,26 +76,35 @@
     document.title = `${name} · Departures`;
 
     const list = (next?.trains || []).slice(0, ROWS);
+    // Track and service info are additive /next fields (babtist): the column appears once any train carries one.
+    document.body.classList.toggle('has-track', list.some((t) => 'track' in t));
     const rows = $('rows');
-    if (!code) rows.innerHTML = '';
-    else if (!next && !err) rows.innerHTML = '<li class="msg">Loading departures…</li>';
+    let html;
+    if (!code) html = '';
+    else if (!next && !err) html = '<li class="msg">Loading departures…</li>';
     else if (!list.length) {
-      rows.innerHTML = `<li class="msg">${err ? `No departures: ${esc(err)}` : next?.upstream && next.upstream !== 'ok' ? 'Train data is reconnecting…' : 'No trains in the next 30 minutes'}</li>`;
+      html = `<li class="msg">${err ? `No departures: ${esc(err)}` : next?.upstream && next.upstream !== 'ok' ? 'Train data is reconnecting…' : 'No trains in the next 30 minutes'}</li>`;
     } else {
-      rows.innerHTML = list.map((t, i) => {
+      html = list.map((t, i) => {
         const when = t.departure || t.arrival || {};
         const sched = new Date(when.scheduled || t.expected);
         const to = (t.to || []).map((x) => x.name || x.station).join(' / ') || '–';
         const dep = departs(t, now);
         const d = t.delayMinutes || 0;
         const late = !t.canceled && d > 0 ? `<em class="${d >= 2 * minutesY ? 'sev' : d >= minutesY ? 'late' : 'minor'}">+${d}</em>` : '';
-        return `<li class="row${i === 0 ? ' first' : ''}${t.canceled ? ' canceled' : ''}">
+        const track = t.track == null || t.track === '' ? '–' : esc(t.track);
+        const info = infoFor(t);
+        return `<li class="row${i === 0 ? ' first' : ''}${t.canceled ? ' canceled' : ''}${t.trackChanged ? ' moved' : ''}">
           <span class="c-time">${hhmm(sched)}${late}</span>
+          <span class="c-track" title="${t.trackChanged ? 'Track changed' : 'Track'}">${track}</span>
           <span class="c-train">${esc(t.train)}</span>
           <span class="c-to">${esc(to)}</span>
-          <span class="c-dep ${dep.cls}">${dep.txt}</span></li>`;
+          <span class="c-dep ${dep.cls}">${dep.txt}</span>${info ? `
+          <span class="c-info">${info}</span>` : ''}</li>`;
       }).join('');
     }
+    // Only touch the DOM when something changed, so blinking cells keep their rhythm.
+    if (rows.dataset.html !== html) { rows.dataset.html = html; rows.innerHTML = html; }
 
     const late = list.filter((t) => !t.canceled && (t.delayMinutes || 0) >= minutesY).length;
     const can = list.filter((t) => t.canceled).length;
@@ -96,6 +114,12 @@
     else if (list.length) parts.push('All upcoming departures on time');
     if (s?.level === 'severe') parts.push('Severe delays at this station');
     else if (s?.level === 'warning') parts.push('Delays at this station');
+    for (const t of list) {
+      const to = (t.to || []).map((x) => x.name || x.station).join(' / ');
+      if (t.trackChanged) parts.push(`Train ${t.train} to ${to}: track changed${t.track ? ` to ${t.track}` : ''}`);
+      const msg = [...(t.deviations || []).map((x) => x.text || x.code), ...(t.notes || [])].filter(Boolean);
+      if (msg.length) parts.push(`Train ${t.train} to ${to}: ${msg.join(', ')}`);
+    }
     if (err && next) parts.push(`Could not refresh (${err}), showing the last list`);
     if (age != null) parts.push(`Updated ${new Date(next.updatedAt).toLocaleTimeString('sv-SE')}${age > STALE_MS ? ', may be out of date' : ''}`);
     parts.push(`"Late" means ${minutesY} min or more`);

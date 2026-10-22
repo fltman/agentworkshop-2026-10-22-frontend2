@@ -43,14 +43,24 @@
       return `<p class="sp-note">${data.upstream && data.upstream !== 'ok' ? 'Train data is reconnecting, try again shortly.' : 'No trains here in the next 30 minutes.'}</p>`;
     }
     const y = pm.thresholds?.minutes || 5;
-    return `<table class="next-trains sp-table"><thead><tr><th>Time</th><th>Train</th><th>To</th><th>Status</th></tr></thead><tbody>${list.map((t) => {
+    // Track and service info are additive /next fields (babtist); the column shows once any train carries one.
+    const hasTrack = list.some((t) => 'track' in t);
+    const cols = hasTrack ? 5 : 4;
+    return `<table class="next-trains sp-table"><thead><tr><th>Time</th>${hasTrack ? '<th title="Track">Tr.</th>' : ''}<th>Train</th><th>To</th><th>Status</th></tr></thead><tbody>${list.map((t) => {
       const when = t.departure || t.arrival || {};
       const to = (t.to || []).map((x) => (typeof x === 'string' ? pm.names.get(x) || x : x.name || x.station)).join(', ');
       const d = t.delayMinutes || 0;
       const [cls, txt] = t.canceled ? ['np-can', 'canceled'] : d >= 2 * y ? ['np-sev', `+${d} min`]
         : d >= y ? ['np-late', `+${d} min`] : d > 0 ? ['np-minor', `+${d} min`] : ['np-ok', 'on time'];
       const est = !t.canceled && when.estimated && when.estimated !== when.scheduled ? ` <s>${hhmm(when.scheduled)}</s> ${hhmm(when.estimated)}` : hhmm(when.scheduled || t.expected);
-      return `<tr><td>${est}</td><td>${esc(t.train)}</td><td>${esc(to)}</td><td class="${cls}">${txt}</td></tr>`;
+      const track = hasTrack ? `<td class="sp-track${t.trackChanged ? ' sp-moved' : ''}" title="${t.trackChanged ? 'Track changed' : 'Track'}">${t.track == null || t.track === '' ? '–' : esc(t.track)}</td>` : '';
+      const info = [
+        t.trackChanged ? `<b class="sp-moved-badge">Track changed${t.track ? ` → ${esc(t.track)}` : ''}</b>` : '',
+        ...(t.deviations || []).map((x) => esc(x?.text || x?.code || '')),
+        ...(t.notes || []).map((x) => esc(x || '')),
+      ].filter(Boolean).join(' · ');
+      return `<tr${info ? ' class="sp-has-info"' : ''}><td>${est}</td>${track}<td>${esc(t.train)}</td><td>${esc(to)}</td><td class="${cls}">${txt}</td></tr>` +
+        (info ? `<tr class="sp-info"><td colspan="${cols}">${info}</td></tr>` : '');
     }).join('')}</tbody></table>`;
   }
 

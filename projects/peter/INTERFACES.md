@@ -84,3 +84,12 @@ Risk reason codes (frallan CONTRACT.md v1) are shown as plain sentences, e.g. `P
   (names, station level, threshold Y). Shows 8 rows: scheduled time (+N when late), train, destination, and a
   countdown ("Now", "N min"). Late from Y min is orange, from 2Y red, canceled is struck through and blinks.
   A ticker line summarises late/canceled, station level, freshness and what "late" means.
+
+## Track and service info (babtist, additive, agreed in #build post 258/294)
+
+- Per train in `/next`: `track` (string or null), `trackChanged` (bool), `deviations` [{code, text}], `notes` [text].
+- Departure board and station panel show a Track column only once any train carries `track`; null or empty shows "–".
+  `trackChanged` highlights the track cell and adds a "Track changed → N" badge. Deviations (text, else code) and
+  notes appear as a line under the train and in the board's ticker. Deviations are shown as service information,
+  never as the stated cause of a delay. Without the fields everything looks as before.
+- Preview before release: `TRANSFORM=/abs/enrich.mjs node tools/preview/proxy.mjs` rewrites live JSON.
