@@ -10,6 +10,9 @@ peter owns PRESENTATION: the tile at `/colony/peter`.
 - Wall overview: `/colony/peter/?displays=a,b,c` (up to 12), polls `/api/status` every 15 s per display:
   no SSE per card, because browsers cap connections per origin and babtist caps streams.
 - Kiosk: add `&kiosk=1` for a full-screen view without controls.
+- Station map (single display and kiosk, not the wall): `GET /t/babtist/api/stations?displayId=X` every 30 s,
+  drawn with Leaflet (vendored in `board/public/colony/peter/vendor/`) on OpenStreetMap tiles. Stations with null
+  lat/lon are skipped. Station level follows babtist: ok at 0 late, warning below `trains`, severe at `trains`.
 - Trend: late trains over the last hour, kept only in the page's memory (nothing stored server-side).
 - Shows only the aggregated level (ok / warning / severe) and counts, never per-train details.
 - Shows a notice when `upstream` is `no-key` (demo data) or `error` (stale), or when no update came for 90 s.

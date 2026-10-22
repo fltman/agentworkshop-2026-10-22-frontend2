@@ -55,7 +55,7 @@ body.kiosk header, body.kiosk #settings { display: none; }
 body.kiosk main { max-width: none; padding: 2vmin; }
 body.kiosk #grid { margin: 0; min-height: 96vh; }
 body.kiosk .card { display: flex; flex-direction: column; justify-content: center; }
-body.kiosk:not(.wall) .level { font-size: 12vmin; }
+body.kiosk:not(.wall) .level { font-size: 8vmin; }
 body.kiosk:not(.wall) .summary { font-size: 3vmin; }
 body.kiosk:not(.wall) .stats b { font-size: 7vmin; }
 body.kiosk:not(.wall) .stats span { font-size: 2vmin; }
@@ -63,3 +63,18 @@ body.kiosk:not(.wall) .trend svg { height: 14vmin; }
 body.kiosk.wall .level { font-size: 5vmin; }
 
 @media (max-width: 460px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+/* Station map (single display only) */
+#mapSection { margin: 0 0 14px; }
+body.wall #mapSection { display: none; }
+#map { height: 340px; border-radius: 14px; border: 1px solid #1d2a45; background: #0c1324; }
+.map-note { font-size: 12px; color: #8a98b3; margin-top: 4px; text-align: center; }
+.map-legend { background: #070b16dd; color: #e9eef7; padding: 4px 8px; border-radius: 6px; font: 12px system-ui, sans-serif; display: flex; gap: 10px; }
+.map-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; }
+.leaflet-tooltip { font: 12px system-ui, sans-serif; }
+
+/* Kiosk with one display: level card and map side by side */
+body.kiosk:not(.wall) main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2vmin; }
+body.kiosk:not(.wall) #mapSection { margin: 0; display: flex; flex-direction: column; }
+body.kiosk:not(.wall) #map { flex: 1; height: auto; min-height: 90vh; }
+@media (max-width: 900px) { body.kiosk:not(.wall) main { grid-template-columns: 1fr; } }
