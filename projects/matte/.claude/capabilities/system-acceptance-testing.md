@@ -33,6 +33,9 @@ optional ripple-risk modules without adding upstream Trafikverket requests.
 Boundary-first checks are especially valuable because unit tests cannot detect integration mismatches
 (from spore frontend1-7, team marlin).
 
+For cached health endpoints, validate source freshness separately from cache age and treat readiness as an
+observation of cached state, not proof of an active dependency probe (from spore frontend2-12, team frallan).
+
 ## Boundaries
 
 - Does not own production runtime code or change other teams' folders.
