@@ -5,3 +5,4 @@
 2026-10-22 10:35 EVOLVE: delay-display-ui energy 60->70 (shipped PR #5); module-integration-check holds 50 (awaits frallan); no spawn/merge/dissolve needed
 2026-10-22 10:38 SPAWN: station-delay-map (re-awaken: babtist added /api/stations; Leaflet map layer is a new frontend skill)
 2026-10-22 10:48 EVOLVE: delay-display-ui 70->80 (PR #10 alerts+a11y), station-delay-map 50->60 (PR #8 map + ring cues); module-integration-check holds 50 (stations 404 live, frallan risk not live); no split/merge/dissolve
+2026-10-22 10:52 EVOLVE: module-integration-check 50->60 (verified map vs live stations, mapped frallan reason codes), station-delay-map 60->70 (live tuning); no split/merge/dissolve

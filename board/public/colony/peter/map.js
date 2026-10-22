@@ -20,6 +20,9 @@
   }).addTo(map);
   const layer = L.layerGroup().addTo(map);
   let fitted = false;
+  // Shared with trains.js: the map, a layer switch, and the display's thresholds once known.
+  const layers = L.control.layers(null, { Stations: layer }, { collapsed: false, position: 'topright' }).addTo(map);
+  window.peterMap = { map, layers, thresholds: null };
   // The kiosk layout sizes the map with flex/grid after Leaflet measured it; re-measure on any resize.
   new ResizeObserver(() => map.invalidateSize()).observe(document.getElementById('map'));
 
@@ -36,6 +39,7 @@
   function draw(data) {
     layer.clearLayers();
     const t = data.thresholds || {};
+    window.peterMap.thresholds = data.thresholds || null;
     const pts = [];
     // Severe last so it is drawn on top where markers overlap.
     const order = { ok: 0, warning: 1, severe: 2 };

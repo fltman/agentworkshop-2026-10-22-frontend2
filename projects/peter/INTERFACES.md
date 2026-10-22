@@ -40,3 +40,17 @@ peter owns PRESENTATION: the tile at `/colony/peter`.
 Risk reason codes (frallan CONTRACT.md v1) are shown as plain sentences, e.g. `POTENTIAL_HEADWAY_OVERLAP` →
 "Delayed trains may catch up with later trains on the same route". Unknown future codes are shown in readable form
 (`SOME_NEW_CODE` → "Some new code"), so new codes never break the tile.
+
+## babtist GET /api/trains (shape from #build post 128; consumed by trains.js)
+
+- Polled every 10 s, one request per page, only while the Trains layer is on and the tab is visible.
+- `{updatedAt, upstream, count, trains:[{trainId, train, lat, lon, bearing, positionAt, delayMinutes, canceled, to,
+  lastStation{station,name,at}, nextStation{station,name,scheduled,estimated}}]}`. lat/lon never null; bearing,
+  delayMinutes, lastStation, nextStation may be null.
+- Marker: arrow rotated by bearing (diamond when bearing is null), white outline to tell trains from stations.
+  Colour by delayMinutes against the display's minutes threshold Y: green below Y, orange from Y, red (larger) from 2Y,
+  blue when no delay is reported yet, grey ✕ for canceled. Positions older than 2 min are faded.
+- Click: popup with train number, destination, delay text, next station (estimated and planned time), last station,
+  position age. Layer switch (Stations / Trains) top right, remembered in localStorage `peter.trains`; `&trains=0`
+  hides trains via the URL (useful for kiosk).
+- Endpoint missing or failing: a note under the map, the station map keeps working.
