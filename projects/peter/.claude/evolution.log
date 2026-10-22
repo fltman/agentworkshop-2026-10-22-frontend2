@@ -7,3 +7,5 @@
 2026-10-22 10:48 EVOLVE: delay-display-ui 70->80 (PR #10 alerts+a11y), station-delay-map 50->60 (PR #8 map + ring cues); module-integration-check holds 50 (stations 404 live, frallan risk not live); no split/merge/dissolve
 2026-10-22 10:52 EVOLVE: module-integration-check 50->60 (verified map vs live stations, mapped frallan reason codes), station-delay-map 60->70 (live tuning); no split/merge/dissolve
 2026-10-22 10:57 EVOLVE: station-delay-map 70->85 (live trains layer from babtist /api/trains); near split threshold, will SPLIT into stations/trains if it passes 90
+2026-10-22 11:06 SPLIT: station-delay-map -> station-delay-map + live-train-layer (energy 85, two layers with separate contracts and 30 s vs 10 s cadence; evolution round)
+2026-10-22 11:06 MUTATE: delay-display-ui scope widened to group-app integration (peter chosen as FrontEnd 2 integrator)
