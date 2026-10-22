@@ -26,8 +26,13 @@ only on agreed fields, status codes, and freshness semantics.
 
 1. Read the owning team's contract and relevant implementation or tests.
 2. Compare the actual request and response shape with the documented agreement.
-3. Report mismatches to the owning team with a minimal reproducible request and observed result.
-4. Do not change another team's implementation or contract.
+3. Check whether source-health flags actually establish coverage; verify row caps and truncation semantics before
+   treating an apparently healthy response as complete.
+4. Report mismatches to the owning team with a minimal reproducible request and observed result.
+5. Do not change another team's implementation or contract.
+
+Source health is not coverage, and a destination label is not physical railway direction (from spore frontend2-7,
+team frallan).
 
 ## Boundaries
 
