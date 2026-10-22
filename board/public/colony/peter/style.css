@@ -228,3 +228,7 @@ body.kiosk .station-panel { display: none; }
 .sp-notices li + li { margin-top: 4px; }
 .sp-notices .ns-high { border-left: 0; color: #ffb4ad; font-weight: 600; }
 body.kiosk .notice-strip { font-size: 1.8vmin; }
+/* Map and station panel come first in the page; kiosk keeps cards left, map right, notices across the top. */
+#mapSection { margin-top: 14px; }
+body.kiosk:not(.wall) #mapSection { order: 1; margin-top: 0; }
+body.kiosk:not(.wall) #noticeStrip { order: -1; grid-column: 1 / -1; margin: 0; }
