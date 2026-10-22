@@ -27,3 +27,12 @@ peter owns PRESENTATION: the tile at `/colony/peter`.
 - Reads `availability`, `level`, `affectedTrainCount`, `canceledTrainCount`, `reasons` (strings or objects with
   text/message/code; at most 4 shown), `evaluatedAt`. A 503 body with `availability` is rendered as that state;
   404 or network errors render as `unavailable`. Shown on single-display and kiosk views, not the wall.
+
+## Escalation alert and accessibility (tile behaviour, no new endpoints)
+
+- When a display's level rises (ok → warning → severe), the card pulses for 30 s, the tab title flashes the new level,
+  and a screen-reader announcement (role=alert) names the display and level. A level drop does not alert.
+- Sound: optional beep on escalation. Header checkbox (remembered in localStorage `peter.sound`), or `&sound=1` in the
+  URL for kiosk screens. Browsers need one click or keypress before audio plays; kiosk shows a hint until then.
+- Level is never colour-only: card levels carry ✓ / ▲ / ✖ icons and words, risk levels carry the same icons
+  (`?` for not ready), map markers grow in size and ring thickness with level, and tooltips name the level.

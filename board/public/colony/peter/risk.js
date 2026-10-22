@@ -7,7 +7,7 @@
   const grid = document.getElementById('grid');
   if (!displayId || !grid) return;
 
-  const LEVEL = { ok: 'Low risk', warning: 'Elevated risk', severe: 'High risk' };
+  const LEVEL = { ok: '✓ Low risk', warning: '▲ Elevated risk', severe: '✖ High risk' };
   const NOT_READY = {
     insufficient: 'Not enough data to judge ripple risk',
     stale: 'Risk data is out of date',
@@ -35,8 +35,8 @@
         (d.canceledTrainCount ? ` · ${d.canceledTrainCount} canceled` : '') +
         (d.evaluatedAt ? ` · evaluated ${new Date(d.evaluatedAt).toLocaleTimeString()}` : '');
     } else {
-      $('.risk-level').textContent = NOT_READY[d.availability] || 'Risk unknown';
-      $('.risk-detail').textContent = d.availability === 'demo' && LEVEL[d.level] ? `Demo level: ${LEVEL[d.level]}` : '';
+      $('.risk-level').textContent = '? ' + (NOT_READY[d.availability] || 'Risk unknown');
+      $('.risk-detail').textContent = d.availability === 'demo' && LEVEL[d.level] ? `Demo level: ${LEVEL[d.level].slice(2)}` : '';
     }
     const reasons = (Array.isArray(d.reasons) ? d.reasons : []).map(reasonText).filter(Boolean).slice(0, 4);
     $('.risk-reasons').replaceChildren(...reasons.map((t) => { const li = document.createElement('li'); li.textContent = t; return li; }));

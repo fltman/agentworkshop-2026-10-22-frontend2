@@ -4,6 +4,9 @@
   const API = '/t/babtist/api';
   const POLL_MS = 30000;
   const COLOR = { ok: '#5fd7a7', warning: '#ffb454', severe: '#ff5c6c' };
+  // Not colour alone: ring thickness and radius grow with level; tooltip names the level.
+  const RING = { ok: ['#070b16', 1], warning: ['#070b16', 2.5], severe: ['#070b16', 5] };
+  const LEVEL_TEXT = { ok: 'ok', warning: 'warning', severe: 'severe' };
   const box = document.getElementById('mapSection');
   const displayId = document.body.dataset.displayId;
   if (!box || !displayId || !window.L) { if (box) box.hidden = true; return; }
@@ -23,7 +26,7 @@
   const legend = L.control({ position: 'bottomleft' });
   legend.onAdd = () => {
     const d = L.DomUtil.create('div', 'map-legend');
-    d.innerHTML = Object.entries(COLOR).map(([k, c]) => `<span><i style="background:${c}"></i>${k}</span>`).join('');
+    d.innerHTML = Object.entries(COLOR).map(([k, c]) => `<span><i style="background:${c};box-shadow:0 0 0 ${RING[k][1] - 1}px ${RING[k][0]}"></i>${k}</span>`).join('');
     return d;
   };
   legend.addTo(map);
@@ -41,8 +44,9 @@
     for (const s of stations) {
       const color = COLOR[s.level] || '#8a98b3';
       const radius = 5 + Math.min(10, Math.sqrt(s.lateCount || 0) * 3);
-      L.circleMarker([s.lat, s.lon], { radius, color: '#070b16', weight: 1, fillColor: color, fillOpacity: .9 })
-        .bindTooltip(`<b>${esc(s.name || s.station)}</b><br>${s.lateCount} late (≥ ${t.minutes} min) · ${s.canceledCount} canceled`)
+      const [ring, weight] = RING[s.level] || RING.ok;
+      L.circleMarker([s.lat, s.lon], { radius, color: ring, weight, fillColor: color, fillOpacity: .9 })
+        .bindTooltip(`<b>${esc(s.name || s.station)}</b> · ${LEVEL_TEXT[s.level] || 'unknown'}<br>${s.lateCount} late (≥ ${t.minutes} min) · ${s.canceledCount} canceled`)
         .addTo(layer);
       pts.push([s.lat, s.lon]);
     }

@@ -92,3 +92,13 @@ body.kiosk:not(.wall) #map { flex: 1; height: auto; min-height: 90vh; }
 .risk-severe  { border-color: #ff5c6c; } .risk-severe .risk-level { color: #ff5c6c; }
 body.kiosk:not(.wall) .risk-level { font-size: 3.5vmin; }
 body.kiosk:not(.wall) #grid { grid-template-rows: 1fr auto; }
+
+/* Escalation alert and accessibility */
+.level .icon { display: inline-block; margin-right: .3em; font-size: .8em; vertical-align: .05em; }
+.card.escalated { animation: escalate 1s ease-in-out infinite; --glow: #ffb454; }
+.lvl-severe.escalated { --glow: #ff5c6c; }
+@keyframes escalate { 50% { box-shadow: 0 0 0 6px var(--glow), 0 0 40px 8px var(--glow); } }
+.sound { display: inline-flex; gap: 4px; align-items: center; font-size: 13px; color: #c7d0e0; cursor: pointer; }
+.sound-hint { position: fixed; bottom: 10px; right: 10px; background: #111a2ee6; border: 1px solid #2a3a5c; padding: 6px 10px; border-radius: 8px; font-size: 13px; z-index: 1000; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .card.escalated, .lvl-severe .level { animation: none; } .card.escalated { box-shadow: 0 0 0 6px var(--glow); } }
