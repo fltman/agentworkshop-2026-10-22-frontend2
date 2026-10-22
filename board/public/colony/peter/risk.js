@@ -23,8 +23,18 @@
   grid.append(root);
   const $ = (sel) => root.querySelector(sel);
 
-  const reasonText = (r) => typeof r === 'string' ? r
-    : r && (r.text || r.message || r.description || r.code) ? String(r.text || r.message || r.description || r.code) : '';
+  // Stable v1 reason codes (projects/frallan/CONTRACT.md). Unknown future codes fall back to a readable form of the code.
+  const REASON = {
+    POTENTIAL_HEADWAY_OVERLAP: 'Delayed trains may catch up with later trains on the same route',
+    INSUFFICIENT_GROUPING_DATA: 'Too few trains with route data to compare',
+    INCOMPLETE_SNAPSHOT: 'Train data is incomplete',
+    STALE_SOURCE: 'Train data has not updated recently',
+    SOURCE_UNAVAILABLE: 'Train data source is unavailable',
+    DEMO_SOURCE: 'Running on demo data',
+  };
+  const codeText = (c) => REASON[c] || (/^[A-Z0-9_]+$/.test(c) ? c.charAt(0) + c.slice(1).toLowerCase().replace(/_/g, ' ') : c);
+  const reasonText = (r) => typeof r === 'string' ? codeText(r)
+    : r && (r.text || r.message || r.description || r.code) ? String(r.text || r.message || r.description || codeText(r.code)) : '';
 
   function render(d) {
     const ready = d.availability === 'ready' && LEVEL[d.level];

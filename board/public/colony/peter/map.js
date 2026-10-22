@@ -12,7 +12,7 @@
   if (!box || !displayId || !window.L) { if (box) box.hidden = true; return; }
 
   const note = document.getElementById('mapNote');
-  const map = L.map('map', { zoomControl: !document.body.classList.contains('kiosk'), attributionControl: true })
+  const map = L.map('map', { zoomSnap: 0.25, zoomControl: !document.body.classList.contains('kiosk'), attributionControl: true })
     .setView([59.33, 18.06], 9);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 15, minZoom: 7,

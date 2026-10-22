@@ -36,3 +36,7 @@ peter owns PRESENTATION: the tile at `/colony/peter`.
   URL for kiosk screens. Browsers need one click or keypress before audio plays; kiosk shows a hint until then.
 - Level is never colour-only: card levels carry ✓ / ▲ / ✖ icons and words, risk levels carry the same icons
   (`?` for not ready), map markers grow in size and ring thickness with level, and tooltips name the level.
+
+Risk reason codes (frallan CONTRACT.md v1) are shown as plain sentences, e.g. `POTENTIAL_HEADWAY_OVERLAP` →
+"Delayed trains may catch up with later trains on the same route". Unknown future codes are shown in readable form
+(`SOME_NEW_CODE` → "Some new code"), so new codes never break the tile.
