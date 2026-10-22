@@ -12,6 +12,9 @@ Base URL (same origin as The Square): `/t/babtist/`. All answers are JSON (`appl
   `AdvertisedTimeAtLocation`, in whole minutes (never negative).
 - A train counts as **late** for a display when its delay >= that display's `minutes`.
 - A train is **canceled** when any of its announcements has `Canceled: true`.
+- Only **current** trains count in `/api/status` and the SSE stream (`lateCount`, `canceledCount`, `trainsTracked`,
+  `maxDelayMinutes`): trains with at least one stop now, in the next 30 min, or in the last 15 min (time = actual,
+  else estimated, else scheduled). Trains that passed longer ago stay in `/api/snapshot` but no longer drive the level.
 - Level for a display, with `trains` = X and `lateCount` = number of late trains:
   - `ok`: `lateCount < trains`
   - `warning`: `trains <= lateCount < 2 * trains`
@@ -123,6 +126,9 @@ default thresholds, a bad id gets `400`).
   station's rows, in whole minutes, never negative. If a train has both an arrival and a departure row at the station,
   the larger delay counts. A train with neither actual nor estimate at the station has no delay there.
 - `lateCount` = distinct trains (by `trainId`) whose delay at that station is >= the display's `minutes`.
+  **Only stops that happen now or happened in the last 15 minutes count** (time = actual, else estimated, else
+  scheduled), so the colour shows the situation now, not trains that passed an hour ago. `canceledCount` uses the
+  same 15-minute rule. A station whose stops are all older still appears, as `ok`.
 - `canceledCount` = distinct trains with a canceled row at the station. Canceled trains are never also counted as late.
 - Per-station `level` uses the display's `trains` threshold X directly (not the `2 * X` of `/api/status`):
   - `ok`: `lateCount == 0`
@@ -132,6 +138,47 @@ default thresholds, a bad id gets `400`).
   refreshed at most every 24 h (retry at most every 10 min after a failure). A station with unknown coordinates still
   appears, with `lat` and `lon` `null` (and `name` = signature if the name is unknown too); map UIs can skip it.
 - With `upstream: "no-key"` (demo data) only `Sci` appears, with hardcoded coordinates for Stockholm City.
+
+### `GET /t/babtist/api/stations/:station/next?limit=<n>`
+
+The next commuter trains at one station, for a station popup ("when do the next trains come, and are they late?").
+Fetch it when the user opens a station (and refresh at most every 20 s while it is open). It never triggers an upstream
+call. `:station` is the station signature from `/api/stations` (URL-encoded, e.g. `S%C3%B6c` for `Söc`); `limit` is
+1 to 30, default 10.
+
+```json
+{
+  "station": "Sci",
+  "name": "Stockholm City",
+  "updatedAt": "2026-10-22T11:12:10.000Z",
+  "upstream": "ok",
+  "count": 1,
+  "trains": [
+    {
+      "trainId": "2231-2026-10-22",
+      "train": "2231",
+      "to": [{ "station": "Söc", "name": "Södertälje centrum" }],
+      "arrival": { "scheduled": "2026-10-22T11:15:00.000Z", "estimated": "2026-10-22T11:19:00.000Z" },
+      "departure": { "scheduled": "2026-10-22T11:16:00.000Z", "estimated": "2026-10-22T11:20:00.000Z" },
+      "expected": "2026-10-22T11:20:00.000Z",
+      "delayMinutes": 4,
+      "canceled": false
+    }
+  ]
+}
+```
+
+- One entry per train run that has not yet left the station: its departure (or, at a terminus, its arrival) has no
+  actual time yet. Only what is in the model window (up to 30 min ahead), so the list can be shorter than `limit`.
+  Entries whose `expected` is more than 5 minutes in the past are dropped (canceled stops never get an actual time).
+- `arrival` / `departure` are `null` when the train has no such stop here (`departure: null` = the train terminates).
+  `estimated` is `null` when Trafikverket has no estimate, which normally means the train runs to schedule.
+- `expected` = departure estimated, else departure scheduled, else arrival estimated/scheduled. Sorted by `expected`.
+- `delayMinutes` = the estimate at this station minus the schedule (departure first), else the train's current delay
+  as in `/api/trains`, else `0`. Whole minutes, never negative. Colour it against the display's `minutes` threshold.
+- `canceled` is `true` if the train's stop at this station is canceled. Canceled trains stay in the list.
+- An unknown or quiet station gives `200` with an empty list (`name` falls back to the signature). A malformed
+  signature gives `400`.
 
 ### `GET /t/babtist/api/trains`
 
@@ -181,6 +228,8 @@ colour by `delayMinutes` against the display's own `minutes` threshold on the cl
 ## Guarantees
 
 - Exactly one upstream poll loop, no matter how many displays or browsers connect.
+- Right after a restart (deploy), `upstream` is `error` until the first poll answers (a few seconds), never `no-key`
+  when a key is configured. Clients should keep their last data while `upstream` is not `ok`.
 - Only the commuter-train rows needed for the current delays, a station list (signature, name, coordinates) and the
   latest position per tracked train are kept, in memory. Only display thresholds are
   written to disk.

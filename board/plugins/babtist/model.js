@@ -3,6 +3,8 @@
 
 const WINDOW_PAST_MS = 60 * 60 * 1000;
 const WINDOW_FUTURE_MS = 30 * 60 * 1000;
+const NEXT_STALE_MS = 5 * 60 * 1000;
+const STATION_RECENT_MS = 15 * 60 * 1000;
 const DEFAULT_THRESHOLDS = { trains: 3, minutes: 5 };
 // Rows of one ident further apart than this are different runs (the same ident recurs the next day).
 const RUN_GAP_MS = 12 * 60 * 60 * 1000;
@@ -132,7 +134,8 @@ class Model {
       live.add(r.train);
       const id = this.trainIdOf(r);
       let t = trains.get(id);
-      if (!t) { t = { canceled: false, lastActAdv: -1, actDelay: null, estDelay: null }; trains.set(id, t); }
+      if (!t) { t = { canceled: false, lastActAdv: -1, actDelay: null, estDelay: null, lastWhen: -Infinity }; trains.set(id, t); }
+      t.lastWhen = Math.max(t.lastWhen, r.act != null ? r.act : r.est != null ? r.est : r.adv);
       if (r.canceled) t.canceled = true;
       if (r.act != null) { if (r.adv > t.lastActAdv) { t.lastActAdv = r.adv; t.actDelay = r.act - r.adv; } }
       else if (r.est != null) t.estDelay = Math.max(t.estDelay == null ? -Infinity : t.estDelay, r.est - r.adv);
@@ -141,6 +144,8 @@ class Model {
     const delays = [];
     let canceled = 0;
     for (const t of trains.values()) {
+      // Status reflects "now": a train whose stops in the window all lie more than 15 min back no longer counts.
+      if (t.lastWhen < now - STATION_RECENT_MS) continue;
       if (t.canceled) { canceled++; continue; }
       const ms = t.actDelay != null ? t.actDelay : t.estDelay;
       if (ms == null) continue;
@@ -175,8 +180,11 @@ class Model {
     const stations = new Map();
     for (const r of this.rows.values()) {
       if (!r.loc) continue;
+      // Station colour reflects "now": only stops that happen(ed) within the last 15 min or later count.
       let s = stations.get(r.loc);
       if (!s) { s = new Map(); stations.set(r.loc, s); }
+      const when = r.act != null ? r.act : r.est != null ? r.est : r.adv;
+      if (when < now - STATION_RECENT_MS) continue;
       const id = this.trainIdOf(r);
       let t = s.get(id);
       if (!t) { t = { canceled: false, delay: null }; s.set(id, t); }
@@ -247,6 +255,55 @@ class Model {
       });
     }
     return out;
+  }
+
+  // The train runs at one station that have not left it yet, sorted by expected time. `to` holds signatures.
+  nextAt(station, now = Date.now(), limit = 10) {
+    this.summarize(now);
+    const runs = new Map(); // trainId -> { train, arr, dep, here, canceled, to, lastAct, estDelay }
+    for (const r of this.rows.values()) {
+      const id = this.trainIdOf(r);
+      let run = runs.get(id);
+      if (!run) { run = { train: r.train, arr: null, dep: null, here: false, canceled: false, to: [], lastAct: null, estDelay: null }; runs.set(id, run); }
+      // The run's current delay, the same rule as trainsInfo: latest actual, else largest estimate.
+      if (r.act != null) { if (!run.lastAct || r.adv > run.lastAct.adv || (r.adv === run.lastAct.adv && r.act > run.lastAct.act)) run.lastAct = r; }
+      else if (r.est != null) run.estDelay = Math.max(run.estDelay == null ? -Infinity : run.estDelay, r.est - r.adv);
+      if (r.loc !== station) continue;
+      run.here = true;
+      if (r.canceled) run.canceled = true;
+      for (const sig of r.to) if (!run.to.includes(sig)) run.to.push(sig);
+      if (r.activity === 'Avgang') { if (!run.dep || r.adv < run.dep.adv) run.dep = r; }
+      else if (r.activity === 'Ankomst') { if (!run.arr || r.adv < run.arr.adv) run.arr = r; }
+    }
+    const minutes = ms => Math.max(0, Math.round(ms / 60000));
+    const out = [];
+    for (const [trainId, run] of runs) {
+      if (!run.here || (!run.arr && !run.dep)) continue;
+      if (run.dep ? run.dep.act != null : run.arr.act != null) continue;
+      const { arr, dep } = run;
+      const expected = dep ? (dep.est != null ? dep.est : dep.adv) : (arr.est != null ? arr.est : arr.adv);
+      // Canceled stops never get an actual time; drop anything long overdue instead of showing it for an hour.
+      if (expected < now - NEXT_STALE_MS) continue;
+      let delay;
+      if (dep && dep.est != null) delay = dep.est - dep.adv;
+      else if (arr && arr.act != null) delay = arr.act - arr.adv;
+      else if (arr && arr.est != null) delay = arr.est - arr.adv;
+      else if (run.lastAct) delay = run.lastAct.act - run.lastAct.adv;
+      else if (run.estDelay != null) delay = run.estDelay;
+      else delay = 0;
+      out.push({
+        trainId,
+        train: run.train,
+        to: run.to,
+        arrival: arr ? { scheduled: iso(arr.adv), estimated: iso(arr.est) } : null,
+        departure: dep ? { scheduled: iso(dep.adv), estimated: iso(dep.est) } : null,
+        expected,
+        delayMinutes: minutes(delay),
+        canceled: run.canceled,
+      });
+    }
+    out.sort((a, b) => a.expected - b.expected || (a.train < b.train ? -1 : a.train > b.train ? 1 : 0));
+    return out.slice(0, limit).map(t => ({ ...t, expected: iso(t.expected) }));
   }
 
   statusFor(thresholds) {
