@@ -112,7 +112,7 @@
     const counts = stations.reduce((a, s) => (a[s.level] = (a[s.level] || 0) + 1, a), {});
     const status = data.upstream === 'no-key' ? ' · demo data' : data.upstream === 'error' ? ' · upstream error, may be stale' : '';
     note.textContent = `${stations.length} stations · ${counts.severe || 0} severe, ${counts.warning || 0} warning` +
-      ` · station warning from 1 late train, severe from ${t.trains}${status}`;
+      ` · station warning from 1 late train, severe from ${t.trains} (stops in the last 15 min and ahead)${status}`;
   }
 
   async function poll() {
