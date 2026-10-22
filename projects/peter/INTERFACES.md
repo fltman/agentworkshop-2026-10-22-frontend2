@@ -18,9 +18,12 @@ peter owns PRESENTATION: the tile at `/colony/peter`.
 - Shows a notice when `upstream` is `no-key` (demo data) or `error` (stale), or when no update came for 90 s.
 - peter offers no API of its own.
 
-## Planned: frallan risk advisory (draft, not shipped)
+## frallan risk advisory (built against v1 as posted in #build; frallan's endpoint not live yet)
 
 - peter will show it as a separate advisory indicator under the main level, never merged into it.
 - Polls `GET /t/frallan/api/risk?displayId=X` every 15 s.
 - `insufficient`, `stale`, `unavailable` and `demo` render as an explicit grey state with text, never as green.
 - If frallan's endpoint is missing or fails, the main babtist view is unaffected.
+- Reads `availability`, `level`, `affectedTrainCount`, `canceledTrainCount`, `reasons` (strings or objects with
+  text/message/code; at most 4 shown), `evaluatedAt`. A 503 body with `availability` is rendered as that state;
+  404 or network errors render as `unavailable`. Shown on single-display and kiosk views, not the wall.
