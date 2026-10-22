@@ -162,12 +162,24 @@ call. `:station` is the station signature from `/api/stations` (URL-encoded, e.g
       "departure": { "scheduled": "2026-10-22T11:16:00.000Z", "estimated": "2026-10-22T11:20:00.000Z" },
       "expected": "2026-10-22T11:20:00.000Z",
       "delayMinutes": 4,
-      "canceled": false
+      "canceled": false,
+      "track": "2",
+      "trackChanged": true,
+      "deviations": [{ "code": "ANA055", "text": "Spårändrat" }, { "code": "ANA034", "text": "Fordonsfel" }],
+      "notes": ["Stannar ej vid Jordbro."]
     }
   ]
 }
 ```
 
+- `track` (string, agreed with peter and frallan): the platform from Trafikverket `TrackAtLocation`, departure row
+  first; `null` when unknown (never a guess). `trackChanged` is `true` when a deviation says the track changed
+  (code `ANA055` / "Spårändrat").
+- `deviations` `[{ code, text }]` (Trafikverket `Deviation`, `code` may be `null`) and `notes` `[text]`
+  (`OtherInformation`, e.g. "Stannar ej vid Jordbro.", "Tågbyte vid Tumba."): service information for this stop,
+  arrival and departure merged, deduplicated, whitespace collapsed, at most 300 characters each, empty arrays when
+  there is none. Plain text from Trafikverket: render it as text, never as HTML. A deviation is service
+  information, not a proven cause of the delay. Same shared query as before, no extra upstream calls.
 - One entry per train run that has not yet left the station: its departure (or, at a terminus, its arrival) has no
   actual time yet. Only what is in the model window (up to 30 min ahead), so the list can be shorter than `limit`.
   Entries whose `expected` is more than 5 minutes in the past are dropped (canceled stops never get an actual time).
@@ -219,6 +231,48 @@ colour by `delayMinutes` against the display's own `minutes` threshold on the cl
 - `upstream` reflects the position feed: `ok`, `error` (positions may be stale) or `no-key` (empty list).
 - Sorted by `train`.
 
+### `GET /t/babtist/api/stations/:station/notices`
+
+The notices Trafikverket shows at one station right now: on station monitors, platform signs and loudspeakers
+(`TrainStationMessage`). One shared loop fetches them every 5 minutes for every station we track; requests never
+call upstream.
+
+```json
+{
+  "station": "Sci",
+  "name": "Stockholm City",
+  "updatedAt": "2026-10-22T10:40:00.000Z",
+  "upstream": "ok",
+  "count": 1,
+  "notices": [
+    {
+      "id": "1500adde-1c5d-2523-08df-281d674c7cb7",
+      "text": "Vissa pendeltåg mot Södertälje centrum stannar inte vid Stuvsta kl. 00:00-05:00 19-23 oktober. Se sl.se.",
+      "priority": "low",
+      "media": ["monitor", "platform"],
+      "start": "2026-10-18T20:00:00.000Z",
+      "end": "2026-10-23T03:00:00.000Z"
+    }
+  ]
+}
+```
+
+- Only notices shown **right now**. Notices limited to certain hours (for example nights 22:00 to 05:00) and days are
+  left out outside those hours, exactly as on the station's own screens. Expect an empty list for most of the day.
+- One entry per text: the same text on monitor, platform sign and loudspeaker becomes one notice. `media` is any of
+  `monitor`, `platform`, `announcement`. `start`/`end` are the widest span over the merged copies.
+- `text` is the sign text as one line (the sign's line breaks removed), at most 500 characters. Trafikverket's text,
+  in Swedish.
+- `priority`: `high`, `normal` or `low` (Trafikverket's `Hog`/`Normal`/`Lag`). Sorted high to low, then newest first.
+- `upstream` reflects the notice feed: `ok`, `error` (the last list is kept) or `no-key` (empty list).
+- An unknown station gives `200` with an empty list. A malformed signature gives `400`.
+
+### `GET /t/babtist/api/notices`
+
+The same notices for all stations at once, for a ticker. The same text at several stations appears once, with
+`stations: [{ "station": "Sci", "name": "Stockholm City" }, ...]` (sorted) added to each notice.
+Body: `{ updatedAt, upstream, count, notices }`.
+
 ### `GET /t/babtist/api/health`
 
 ```json
@@ -230,8 +284,8 @@ colour by `delayMinutes` against the display's own `minutes` threshold on the cl
 - Exactly one upstream poll loop, no matter how many displays or browsers connect.
 - Right after a restart (deploy), `upstream` is `error` until the first poll answers (a few seconds), never `no-key`
   when a key is configured. Clients should keep their last data while `upstream` is not `ok`.
-- Only the commuter-train rows needed for the current delays, a station list (signature, name, coordinates) and the
-  latest position per tracked train are kept, in memory. Only display thresholds are
+- Only the commuter-train rows needed for the current delays, a station list (signature, name, coordinates), the
+  current station notices and the latest position per tracked train are kept, in memory. Only display thresholds are
   written to disk.
 - Errors: `400` bad input, `404` unknown route/display, `429` too many streams/displays. Body `{ "error": "..." }`.
 
