@@ -151,3 +151,4 @@ body.kiosk .credits { display: none; }
 .next-trains .np-late { color: #b56a00; font-weight: 600; }
 .next-trains .np-sev { color: #c62828; font-weight: 700; }
 .next-trains .np-can { color: #c62828; text-decoration: line-through; }
+.next-trains .np-minor { color: #3d4658; }

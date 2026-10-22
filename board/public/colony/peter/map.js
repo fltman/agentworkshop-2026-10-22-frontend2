@@ -45,13 +45,14 @@
     if (err) return `${head}<div class="np-note">${esc(err)}</div>`;
     if (!data) return `${head}<div class="np-note">Loading next trains…</div>`;
     const list = (data.trains || data.departures || []).slice(0, 8);
-    if (!list.length) return `${head}<div class="np-note">No trains in the next 30 minutes.</div>`;
+    if (!list.length) return `${head}<div class="np-note">${data.upstream && data.upstream !== 'ok' ? 'Train data is reconnecting, try again shortly.' : 'No trains in the next 30 minutes.'}</div>`;
     const rows = list.map((t) => {
       const when = t.departure || t.arrival || {};
       const to = (t.to || []).map((x) => (typeof x === 'string' ? window.peterMap.names.get(x) || x : x.name || x.station)).join(', ');
       const d = t.delayMinutes || 0;
-      const [cls, txt] = t.canceled ? ['np-can', 'canceled'] : d >= 2 * (window.peterMap.thresholds?.minutes || 5) ? ['np-sev', `+${d} min`]
-        : d > 0 ? ['np-late', `+${d} min`] : ['np-ok', 'on time'];
+      const y = window.peterMap.thresholds?.minutes || 5;
+      const [cls, txt] = t.canceled ? ['np-can', 'canceled'] : d >= 2 * y ? ['np-sev', `+${d} min`]
+        : d >= y ? ['np-late', `+${d} min`] : d > 0 ? ['np-minor', `+${d} min`] : ['np-ok', 'on time'];
       return `<tr><td>${hhmm(when.scheduled || t.expected)}</td><td>${esc(t.train || '')}</td><td>${esc(to)}</td><td class="${cls}">${txt}</td></tr>`;
     }).join('');
     return `${head}<table class="next-trains"><thead><tr><th>Time</th><th>Train</th><th>To</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
