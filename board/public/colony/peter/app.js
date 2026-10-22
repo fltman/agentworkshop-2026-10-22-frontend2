@@ -47,7 +47,7 @@
     const meta = el('div', 'meta');
     root.append(title, level, summary, scale, stats, trendBox, notice, meta);
 
-    const card = { id, root, lastAt: 0, samples: [], minutes: null, thresholds: null, level: null, flashUntil: 0 };
+    const card = { id, root, trendBox, lastAt: 0, samples: [], minutes: null, thresholds: null, level: null, flashUntil: 0 };
 
     card.setNotice = (text) => { notice.hidden = !text; notice.textContent = text; };
 
@@ -237,6 +237,7 @@
   // ---------- page ----------
   const grid = $('grid');
   cards = ids.map(makeCard);
+  window.peterCards = cards;
   grid.replaceChildren(...cards.map((c) => c.root));
 
   if (wall) {

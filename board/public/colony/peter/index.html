@@ -23,8 +23,23 @@
   <div id="grid"></div>
 
   <section id="mapSection">
-    <div id="map" role="region" aria-label="Map of commuter stations coloured by delay level"></div>
-    <div id="mapNote" class="map-note">Loading stations…</div>
+    <div class="map-row">
+      <div class="map-col">
+        <div id="map" role="region" aria-label="Map of commuter stations coloured by delay level"></div>
+        <div id="mapNote" class="map-note">Loading stations…</div>
+      </div>
+      <aside id="stationPanel" class="station-panel" aria-label="Selected station">
+        <form id="stationForm" class="sp-search" autocomplete="off" role="search">
+          <label for="stationSearch" class="sr-only">Find a station</label>
+          <input id="stationSearch" list="stationList" placeholder="Find a station…" maxlength="60">
+          <datalist id="stationList"></datalist>
+          <button>Go</button>
+        </form>
+        <p id="stationMiss" class="sp-note sp-err" hidden>No station with that name on this map.</p>
+        <div id="stationBody" aria-live="polite"></div>
+        <div id="stationFresh" class="sp-fresh"></div>
+      </aside>
+    </div>
   </section>
 
   <details id="settings">
@@ -54,4 +69,6 @@
 <script src="vendor/leaflet.js"></script>
 <script src="map.js"></script>
 <script src="trains.js"></script>
+<script src="station-panel.js"></script>
+<script src="trend-frallan.js"></script>
 </body></html>

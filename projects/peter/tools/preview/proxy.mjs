@@ -1,7 +1,8 @@
 // Live preview: serves our local tile and proxies /t/* to the live board.
 // Usage: BOARD_URL=https://... node projects/peter/tools/preview/proxy.mjs  (port 8198)
 // Query extras on /colony/peter/: opensettings=1 opens the threshold panel; zoomto=lat,lon zooms the map to 13;
-// open=<station> opens that station popup after zooming.
+// open=<station> selects that station after zooming (station=<code> works natively too).
+// OVERRIDE_DIR=/some/dir serves /colony/<team>/<file> from <dir>/<team>/<file> when present (fake another team's asset).
 import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path'; import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(here, '../../../..');
@@ -12,6 +13,11 @@ const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/cs
 http.createServer(async (req, res) => {
   try {
     const u = new URL(req.url, 'http://x');
+    const od = process.env.OVERRIDE_DIR && u.pathname.startsWith('/colony/') && path.join(process.env.OVERRIDE_DIR, u.pathname.slice(8));
+    if (od && od.startsWith(process.env.OVERRIDE_DIR) && fs.existsSync(od) && fs.statSync(od).isFile()) {
+      res.writeHead(200, { 'content-type': types[path.extname(od)] || 'application/octet-stream' });
+      return res.end(fs.readFileSync(od));
+    }
     if (u.pathname.startsWith('/colony/peter/')) {
       let f = path.join(DIR, u.pathname.slice('/colony/peter/'.length));
       if (!f.startsWith(DIR) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) f = path.join(DIR, 'index.html');
@@ -21,7 +27,7 @@ http.createServer(async (req, res) => {
         if (u.searchParams.get('opensettings')) s = s.replace('<details id="settings">', '<details id="settings" open>');
         const z = u.searchParams.get('zoomto');
         if (z) {
-          const js = `setTimeout(()=>{peterMap.map.setView([${z.split(',').map(Number).join(',')}],13);setTimeout(()=>peterMap.map.eachLayer(l=>{if(l.station&&l.station.station===${JSON.stringify(u.searchParams.get('open') || '')})l.openPopup()}),2500)},1500)`;
+          const js = `setTimeout(()=>{peterMap.map.setView([${z.split(',').map(Number).join(',')}],13);setTimeout(()=>peterMap.select(${JSON.stringify(u.searchParams.get('open') || '')}),2500)},1500)`;
           s = s.replace('</body>', `<script>${js}</script></body>`);
         }
         b = Buffer.from(s);

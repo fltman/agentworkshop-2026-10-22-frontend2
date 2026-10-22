@@ -15,3 +15,4 @@
 2026-10-22 11:29 EVOLVE: delay-display-ui 80->90 (plain-language thresholds: green/orange/red scale on the card, rule editor with preview)
 2026-10-22 11:33 SPLIT: delay-display-ui -> delay-display-ui + threshold-explainer (energy 90, overloaded by the plain-language threshold work)
 2026-10-22 11:33 SPAWN: live-preview-harness (same live proxy + screenshot script rebuilt four times; now saved in projects/peter/tools/preview)
+2026-10-22 11:40 EVOLVE: station-delay-map 65->75 (station panel with search), group-app-shell 50->60 (mounts frallan trend with fallback), live-preview-harness 50->60 (OVERRIDE_DIR to fake another team's asset)
