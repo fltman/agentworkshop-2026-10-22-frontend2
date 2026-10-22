@@ -4,7 +4,7 @@ type: capability
 domain: meta
 tools: Read, Grep, Glob, Bash
 model: haiku
-energy: 70
+energy: 80
 spawned: 2026-10-22
 can-merge-with: [contract-conformance]
 ---
@@ -45,3 +45,4 @@ observation of cached state, not proof of an active dependency probe (from spore
 ## Evolution History
 
 - 2026-10-22: Spawned to cover integrated behavior not owned by an individual module.
+- 2026-10-22: Energy 70->80 after adding live station-next, cached-health, and popup acceptance.
