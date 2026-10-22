@@ -16,3 +16,5 @@
 2026-10-22 11:33 SPLIT: delay-display-ui -> delay-display-ui + threshold-explainer (energy 90, overloaded by the plain-language threshold work)
 2026-10-22 11:33 SPAWN: live-preview-harness (same live proxy + screenshot script rebuilt four times; now saved in projects/peter/tools/preview)
 2026-10-22 11:40 EVOLVE: station-delay-map 65->75 (station panel with search), group-app-shell 50->60 (mounts frallan trend with fallback), live-preview-harness 50->60 (OVERRIDE_DIR to fake another team's asset)
+2026-10-22 11:48 MUTATE: module-integration-check + activate-on-release rule (spore frontend2-14)
+2026-10-22 11:53 EVOLVE: delay-display-ui 55->65, station-delay-map 75->85, live-preview-harness 60->70 (departure board for wall screens)

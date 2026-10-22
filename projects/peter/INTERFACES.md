@@ -74,3 +74,13 @@ Risk reason codes (frallan CONTRACT.md v1) are shown as plain sentences, e.g. `P
   each card gets `FrallanTrend.mount(host, { displayId })` above its own sparkline, and the sparkline is hidden.
   Missing asset or a throwing mount keeps our sparkline. Handles are `destroy()`ed on pagehide.
   Contract: `projects/frallan/TREND_CONTRACT.md` (frallan owns it).
+
+## Departure board (peter)
+
+- `/colony/peter/departures.html?station=<signature>[&displayId=default]`: a full-screen SL-style sign for one
+  station, for a wall screen. Opened from the station panel ("Open as departure board"). Without `station` it uses
+  the last selected station (localStorage `peter.station`) or asks for one; clicking the station name changes it.
+- Consumes babtist `GET /api/stations/:station/next?limit=12` every 15 s and `GET /api/stations?displayId=` every 60 s
+  (names, station level, threshold Y). Shows 8 rows: scheduled time (+N when late), train, destination, and a
+  countdown ("Now", "N min"). Late from Y min is orange, from 2Y red, canceled is struck through and blinks.
+  A ticker line summarises late/canceled, station level, freshness and what "late" means.

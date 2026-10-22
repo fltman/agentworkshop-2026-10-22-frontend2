@@ -63,6 +63,7 @@
     const s = pm.stations.get(current) || { station: current, name: pm.names.get(current) || current };
     const lvl = s.level in LEVEL ? s.level : 'unknown';
     const head = `<div class="sp-head"><h3>${esc(s.name)}</h3><span class="sp-badge sp-${lvl}">${LEVEL[lvl] || 'No data'}</span></div>` +
+      `<a class="sp-board" href="departures.html?station=${encodeURIComponent(s.station)}" target="_blank" rel="noopener">Open as departure board ↗</a>` +
       (s.lateCount != null ? `<p class="sp-sum">${s.lateCount} late, ${s.canceledCount} canceled right now</p>` : '');
     body.innerHTML = head + (nextErr ? `<p class="sp-note sp-err">${esc(nextErr)}</p>` : next ? rows(next) : '<p class="sp-note">Loading next trains…</p>');
     const age = next?.updatedAt ? Date.now() - new Date(next.updatedAt).getTime() : null;

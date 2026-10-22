@@ -4,7 +4,7 @@ name: delay-display-ui
 type: capability
 domain: frontend
 tools: Read, Write, Edit, Grep, Glob, Bash
-energy: 55
+energy: 65
 spawned: 2026-10-22
 can-merge-with: []
 ---

@@ -204,3 +204,4 @@ body.kiosk .station-panel { display: none; }
 .sp-table .np-ok { color: #5fd7a7; } .sp-table .np-minor { color: #c7d0e0; }
 .sp-table .np-late { color: #ffb454; } .sp-table .np-sev, .sp-table .np-can { color: #ff5c6c; }
 .frallan-trend-host { margin-top: 12px; }
+.sp-board { display: inline-block; margin: 2px 0 8px; font-size: 13px; color: #ffb000; }
