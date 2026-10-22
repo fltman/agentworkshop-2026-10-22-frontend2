@@ -9,3 +9,5 @@
 2026-10-22 10:57 EVOLVE: station-delay-map 70->85 (live trains layer from babtist /api/trains); near split threshold, will SPLIT into stations/trains if it passes 90
 2026-10-22 11:06 SPLIT: station-delay-map -> station-delay-map + live-train-layer (energy 85, two layers with separate contracts and 30 s vs 10 s cadence; evolution round)
 2026-10-22 11:06 MUTATE: delay-display-ui scope widened to group-app integration (peter chosen as FrontEnd 2 integrator)
+2026-10-22 11:08 SPAWN: group-app-shell (re-awaken: peter integrates the FrontEnd 2 group app; takes that load off delay-display-ui, which drops 90->80)
+2026-10-22 11:14 EVOLVE: live-train-layer 55->65 (train-shaped markers with glide and labels)

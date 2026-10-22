@@ -104,14 +104,27 @@ body.kiosk:not(.wall) #grid { grid-template-rows: 1fr auto; }
 @media (prefers-reduced-motion: reduce) { .card.escalated, .lvl-severe .level { animation: none; } .card.escalated { box-shadow: 0 0 0 6px var(--glow); } }
 
 /* Live trains layer */
-.train-marker { display: grid; place-items: center; background: none; border: 0; }
-.train-marker .tm-arrow { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent;
-  border-bottom: 20px solid var(--tc); filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff) drop-shadow(0 0 2px #070b16); transform-origin: 50% 60%; }
-.train-marker .tm-dot { width: 12px; height: 12px; transform: rotate(45deg); background: var(--tc); box-shadow: 0 0 0 2px #fff, 0 0 3px 2px #070b16; }
-.train-marker .tm-x { font: 700 16px/1 system-ui, sans-serif; color: #c7d0e0; text-shadow: 0 0 2px #070b16, 0 0 2px #070b16; }
-.tm-ok { --tc: #5fd7a7; } .tm-warning { --tc: #ffb454; } .tm-severe { --tc: #ff5c6c; } .tm-unknown { --tc: #8fb4ff; }
-.tm-severe .tm-arrow { border-left-width: 10px; border-right-width: 10px; border-bottom-width: 26px; }
+.train-marker { background: none; border: 0; transition: transform 9s linear; }
+.no-glide .train-marker, .leaflet-zoom-anim .train-marker { transition: none; }
+.train-marker .tm-rot { position: absolute; inset: 0; display: grid; place-items: center; transition: transform .8s ease; }
+.train-marker .tm-body { width: 19px; height: 33px; overflow: visible; filter: drop-shadow(0 1px 2px #070b16cc); }
+.train-marker .tm-body path:first-child { fill: var(--tc); stroke: #fff; stroke-width: 2; }
+.train-marker .tm-glass { fill: #0b1426; opacity: .85; }
+.train-marker .tm-win { fill: #ffffff; opacity: .55; }
+.train-marker .tm-cross { stroke: #c0182c; stroke-width: 3.5; stroke-linecap: round; }
+.train-marker .tm-nodir .tm-body { transform: scale(.85); }
+.train-marker .tm-label { position: absolute; left: 50%; top: 100%; transform: translate(-50%, -2px); display: none;
+  font: 700 10px/1 system-ui, sans-serif; color: #070b16; background: #ffffffe6; border-radius: 4px; padding: 2px 4px; white-space: nowrap; }
+.show-train-labels .train-marker .tm-label { display: block; }
+.tm-ok { --tc: #2fbf87; } .tm-warning { --tc: #ff9f1a; } .tm-severe { --tc: #ff4057; } .tm-unknown { --tc: #6f9cff; } .tm-canceled { --tc: #9aa6bd; }
+.tm-severe .tm-body { width: 23px; height: 39px; }
+.tm-halo { position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%;
+  background: #ff405755; animation: tm-pulse 1.6s ease-out infinite; }
+@keyframes tm-pulse { from { transform: scale(.5); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
 .tm-stale { opacity: .4; }
+.map-legend .lg-train { display: inline-block; width: 7px; height: 12px; border-radius: 4px 4px 2px 2px; margin-right: 4px; vertical-align: -1px; background: var(--tc); box-shadow: 0 0 0 1.5px #fff; }
+.tm-stale .tm-halo { display: none; }
+@media (prefers-reduced-motion: reduce) { .train-marker, .train-marker .tm-rot { transition: none; } .tm-halo { animation: none; } }
 .train-pop { font-size: 13px; line-height: 1.45; }
 .train-pop .tp-delay { font-weight: 700; }
 .leaflet-control-layers { background: #111a2ee6; color: #c7d0e0; border: 1px solid #2a3a5c !important; }
@@ -121,3 +134,7 @@ body.kiosk:not(.wall) #grid { grid-template-rows: 1fr auto; }
 .credits { margin-top: 18px; font-size: 12px; color: #8a98b3; text-align: center; line-height: 1.6; }
 .credits b { color: #c7d0e0; }
 body.kiosk .credits { display: none; }
+.map-legend { flex-wrap: wrap; row-gap: 4px; }
+.map-legend .lg-trains { flex-basis: 100%; display: flex; gap: 10px; color: #c7d0e0; }
+.map-legend .lg-trains[hidden] { display: none; }
+.small-trains .train-marker .tm-rot > svg { transform: scale(.65); } .small-trains .tm-halo { width: 26px; height: 26px; margin: -13px 0 0 -13px; }
