@@ -37,12 +37,40 @@
     return ['ok', t.delayMinutes > 0 ? `${t.delayMinutes} min late` : 'On time'];
   }
 
-  function icon(cls, bearing, stale) {
-    const arrow = typeof bearing === 'number';
-    const shape = cls === 'canceled' ? '<span class="tm-x">✕</span>'
-      : arrow ? `<span class="tm-arrow" style="transform:rotate(${bearing}deg)"></span>` : '<span class="tm-dot"></span>';
-    return L.divIcon({ className: `train-marker tm-${cls}${stale ? ' tm-stale' : ''}`, html: shape, iconSize: [22, 22], iconAnchor: [11, 11] });
+  // A small commuter-train body seen from above, nose pointing up (rotated by bearing). Canceled: grey with a cross.
+  const BODY = 'M12 2C17 2 20 6 20 11V36a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V11C4 6 7 2 12 2Z';
+  const trainSvg = (cls) => `<svg class="tm-body" viewBox="0 0 24 41" aria-hidden="true">
+      <path d="${BODY}" />
+      <path class="tm-glass" d="M7.5 10.5Q12 6.5 16.5 10.5V13.5H7.5Z" />
+      <rect class="tm-win" x="8" y="17" width="8" height="2.6" rx="1.2" /><rect class="tm-win" x="8" y="22.5" width="8" height="2.6" rx="1.2" />
+      <rect class="tm-win" x="8" y="28" width="8" height="2.6" rx="1.2" />
+      ${cls === 'canceled' ? '<path class="tm-cross" d="M5 15L19 35M19 15L5 35" />' : ''}</svg>`;
+
+  function icon(cls, bearing, stale, label) {
+    const dir = typeof bearing === 'number';
+    const body = dir ? `<span class="tm-rot" style="transform:rotate(${bearing}deg)">${trainSvg(cls)}</span>`
+      : `<span class="tm-rot tm-nodir">${trainSvg(cls)}</span>`;
+    return L.divIcon({
+      className: `train-marker tm-${cls}${stale ? ' tm-stale' : ''}`,
+      html: `${cls === 'severe' ? '<span class="tm-halo"></span>' : ''}${body}<span class="tm-label">${esc(label)}</span>`,
+      iconSize: [42, 42], iconAnchor: [21, 21], popupAnchor: [0, -18],
+    });
   }
+
+  // Train legend row, shown only while the Trains layer is on.
+  const legendRow = document.createElement('div');
+  legendRow.className = 'lg-trains';
+  legendRow.innerHTML = 'Trains: ' + [['ok', 'on time'], ['warning', 'late'], ['severe', 'very late'], ['unknown', 'no data'], ['canceled', 'canceled']]
+    .map(([c, t]) => `<span class="tm-${c}"><i class="lg-train"></i>${t}</span>`).join('');
+  const showLegend = () => { const lg = document.querySelector('.map-legend'); if (lg && !legendRow.isConnected) lg.append(legendRow); legendRow.hidden = !map.hasLayer(layer); };
+  map.on('overlayadd overlayremove', showLegend); showLegend();
+
+  // Train numbers only when zoomed in; no glide while Leaflet re-positions markers on zoom.
+  const box = map.getContainer();
+  const labels = () => { box.classList.toggle('show-train-labels', map.getZoom() >= 11); box.classList.toggle('small-trains', map.getZoom() < 10); };
+  map.on('zoomend', labels); labels();
+  map.on('zoomstart', () => box.classList.add('no-glide'));
+  map.on('zoomend', () => setTimeout(() => box.classList.remove('no-glide'), 50));
 
   // `to` is a list of destination station signatures (babtist CONTRACT.md); show names where the station list knows them.
   const dest = (to) => (Array.isArray(to) ? to : to ? [to] : []).map((sig) => pm.names.get(sig) || sig).join(' / ');
@@ -80,7 +108,8 @@
       } else {
         m.setLatLng([t.lat, t.lon]);
       }
-      m.setIcon(icon(cls, t.bearing, stale));
+      const key = `${cls}|${t.bearing}|${stale}`;
+      if (m.iconKey !== key) { m.setIcon(icon(cls, t.bearing, stale, t.train || id)); m.iconKey = key; }
       m.setZIndexOffset(cls === 'severe' ? 300 : cls === 'warning' ? 200 : 0);
       m.options.title = `Train ${t.train || id}: ${label}`;
       m.getElement()?.setAttribute('title', m.options.title);
@@ -88,7 +117,7 @@
     }
     for (const [id, m] of markers) if (!seen.has(id)) { layer.removeLayer(m); markers.delete(id); }
     const status = data.upstream === 'no-key' ? ' (demo data)' : data.upstream === 'error' ? ' (upstream error, may be stale)' : '';
-    trainNote.textContent = `${markers.size} trains on the map (arrows), ${counts.late} late ≥ ${minutes} min, ${counts.canceled} canceled${status}`;
+    trainNote.textContent = `${markers.size} trains on the map, pointing the way they run, ${counts.late} late ≥ ${minutes} min, ${counts.canceled} canceled${status}`;
   }
 
   async function poll() {

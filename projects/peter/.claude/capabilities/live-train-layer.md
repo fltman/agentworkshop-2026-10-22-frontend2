@@ -4,7 +4,7 @@ name: live-train-layer
 type: capability
 domain: frontend
 tools: Read, Write, Edit, Grep, Glob, Bash
-energy: 55
+energy: 65
 spawned: 2026-10-22
 can-merge-with: [station-delay-map]
 ---
@@ -42,3 +42,4 @@ Does NOT own the map base, stations or legend (station-delay-map does) and does 
 ## Evolution History
 
 - 2026-10-22: SPLIT from station-delay-map (energy 85, carrying two layers with different contracts and cadences)
+- 2026-10-22: train-shaped SVG markers, glide, zoom labels, legend; energy 65

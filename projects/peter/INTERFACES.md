@@ -47,7 +47,7 @@ Risk reason codes (frallan CONTRACT.md v1) are shown as plain sentences, e.g. `P
 - `{updatedAt, upstream, count, trains:[{trainId, train, lat, lon, bearing, positionAt, delayMinutes, canceled, to[] (destination signatures, shown as station names),
   lastStation{station,name,at}, nextStation{station,name,scheduled,estimated}}]}`. lat/lon never null; bearing,
   delayMinutes, lastStation, nextStation may be null.
-- Marker: arrow rotated by bearing (diamond when bearing is null), white outline to tell trains from stations.
+- Marker: a small SVG train (nose, windscreen, windows) rotated by bearing, white outline; unrotated when bearing is null. Glides between 10 s positions; train number shown from zoom 11, smaller trains below zoom 10; pulsing halo when very late; train legend row.
   Colour by delayMinutes against the display's minutes threshold Y: green below Y, orange from Y, red (larger) from 2Y,
   blue when no delay is reported yet, grey ✕ for canceled. Positions older than 2 min are faded.
 - Click: popup with train number, destination, delay text, next station (estimated and planned time), last station,
